@@ -35,5 +35,16 @@
         }
       ]
     }
+  ],
+  "filters": [
+    {
+      "enable": true,
+      "version": 120,
+      "operator": "=",
+      "params":{
+        "watch_video.weight": 120,
+        "likes.1":"banana120"
+      }
+    }
   ]
 }

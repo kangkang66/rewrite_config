@@ -1,3 +1,10 @@
+# 按照
+> go get github.com/kangkang66/rewrite_config
+
+# 使用
+
+> 参考test.go
+
 # 介绍
 
 ```
@@ -41,10 +48,19 @@
       // 可以配置多组
       ...
       ],
+      //按版本号替换
+      "filters": [
+            {
+              "enable": true,
+              "version": 120,
+              //支持 in，=，!=，>，>=，<，<=
+              "operator": "=",
+              "params":{
+                "watch_video.weight": 120,
+                "likes.1":"banana120"
+              }
+            }
+        ]
 
  }
 ```
-
-# 使用
-
-> 参考test.go
