@@ -25,7 +25,7 @@ func RewriteConfigByFilter(ctx context.Context, configData map[string]interface{
 		//把params覆盖当前的data
 		newData = rewrite(ctx, newData, params)
 	}
-
+	delete(newData,"filters")
 	return
 }
 

@@ -30,7 +30,12 @@
           "params": {
             "watch_video.show2": 11,
             "names.0.name" : "mytest_1_111111",
-            "likes.10": "bigApple"
+            "likes.10": "bigApple",
+            "naga_watch_ad": {
+              "reward": 100,
+              "daily_max": 1,
+              "weight": 20
+            }
           }
         }
       ]

@@ -26,6 +26,7 @@ func RewriteConfigByAbtest(ctx context.Context, configData map[string]interface{
 		newData = rewrite(ctx, newData, testParams)
 	}
 
+	delete(newData,"abtests")
 	return
 }
 
