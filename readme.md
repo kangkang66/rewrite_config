@@ -1,9 +1,6 @@
 # 按照
 > go get github.com/kangkang66/rewrite_config
 
-# 使用
-
-> 参考test.go
 
 # 介绍
 
@@ -63,4 +60,52 @@
         ]
 
  }
+```
+
+# 使用
+
+> 参考test.go
+
+```
+{
+  "watch_video_1": {
+    "show": 1
+  },
+   "watch_video_2": {
+    "show": 1,
+    "award":100
+  },
+  "likes":[1,2,3],
+  "likes_2":[6,7,8],
+
+   //也可以换成filters
+  "abtests" : [
+    {
+      "enable": true,
+      "ab_key": "mytest_1",
+      "tests":[
+        {
+          "ab_val": "1",
+
+          "params": {
+            //直接完整覆盖
+            "watch": {
+                 "show": 2
+            },
+            //指定字段覆盖
+            "watch_video_2.show":22,
+            //指定数组元素替换
+            "likes.0": 11,
+            //命令$append，针对数组元素追加
+            "likes.$append": 4,
+            //命令$delete，针对数组元素删除
+            "likes_2.$delete": "",
+            //命令$delete，针对对象元素删除
+            "watch_video_2.award.$delete":""
+          }
+        }
+      ]
+    }
+  ]
+}
 ```
