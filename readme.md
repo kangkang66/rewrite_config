@@ -1,4 +1,4 @@
-# 按照
+# 安装
 > go get github.com/kangkang66/rewrite_config
 
 
