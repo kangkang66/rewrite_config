@@ -7,65 +7,88 @@ import (
 )
 
 func rewrite(ctx context.Context, data map[string]interface{}, testParams map[string]interface{}) (newData map[string]interface{}) {
-	newData = data
 
 	for rewriteKey,rewriteVal := range testParams {
-		var preSonV, sonV interface{}
-		preIdx := -1
-
-		sonV = newData
 		//分割字段
 		fields := strings.Split(rewriteKey,".")
-		lastKey := len(fields) - 1
+		lastIdx := len(fields) - 1
 
-		//data.$append  data一定是数组，追加一个新数组
-		//data.2.$delete
+		var preFieldValue interface{} = data
 
-		for currFieldkey,fieldName := range fields {
+		fieldAddr := make([]interface{},0,len(fields) + 1)
+		fieldAddr = append(fieldAddr, preFieldValue)
+
+		for currFieldIdx,fieldName := range fields {
 			var ok bool
 			//如果是数字，代表是数组的key
 			if idx,err := strconv.Atoi(fieldName);err == nil {
-				if _,ok = sonV.([]interface{});ok {
-					//别超出数组长度
-					if idx > len(sonV.([]interface{})) {
-						continue
-					}
-					preSonV = sonV
-					preIdx = idx
-					//如果是最后一个key替换
-					if currFieldkey == lastKey {
-						sonV.([]interface{})[idx] = rewriteVal
-					}else{
-						sonV = sonV.([]interface{})[idx]
-					}
+				if _,ok = preFieldValue.([]interface{});!ok {
+					break
+				}
+				//超出数组长度,后续的字段不会再处理
+				if idx >= len(preFieldValue.([]interface{})) {
+					break
+				}
+				//如果是最后一个key替换
+				if currFieldIdx == lastIdx {
+					preFieldValue.([]interface{})[idx] = rewriteVal
+				}else{
+					preFieldValue = preFieldValue.([]interface{})[idx]
 				}
 			}else{
 				//优先命令处理
-				if fieldName == "$append" && currFieldkey == lastKey && currFieldkey != 0 {
-					//一定是数组，追加一个新元素(格式：likes.$append，likes.2.$append)
-					if _,ok = sonV.([]interface{});ok {
-						if preIdx == -1 {
-							preSonV.(map[string]interface{})[fields[currFieldkey-1]] = append(sonV.([]interface{}), rewriteVal)
+				if fieldName == "$append" && currFieldIdx == lastIdx && currFieldIdx > 0 {
+					//当前 currFieldValue 一定是数组，追加一个新元素(格式：likes.$append，likes.2.2.$append)
+					if _,ok = preFieldValue.([]interface{});ok {
+						//append后，preFieldValue地址会指向新的切片地址
+						newValue := append(preFieldValue.([]interface{}), rewriteVal)
+						//根据上个字段，判断上上个是数组还是map
+						preFieldStr := fields[currFieldIdx-1]
+						if preFieldInt,err := strconv.Atoi(preFieldStr);err != nil {
+							fieldAddr[len(fieldAddr) - 2].(map[string]interface{})[preFieldStr] = newValue
 						}else{
-							preSonV.([]interface{})[preIdx] = append(sonV.([]interface{}), rewriteVal)
+							fieldAddr[len(fieldAddr) - 2].([]interface{})[preFieldInt] = newValue
 						}
 					}
-				}else {
-					//代表是map
-					//如果是最后一个key替换
-					if _,ok = sonV.(map[string]interface{});ok{
-						preSonV = sonV
-						if currFieldkey == lastKey {
-							sonV.(map[string]interface{})[fieldName] = rewriteVal
+				} else if fieldName == "$delete" && currFieldIdx == lastIdx && currFieldIdx > 0 {
+					//根据上个字段，判断上上个是数组还是map
+					preFieldStr := fields[currFieldIdx-1]
+					if preFieldInt,err := strconv.Atoi(preFieldStr);err != nil {
+						//map 类型
+						delete(fieldAddr[len(fieldAddr) - 2].(map[string]interface{}), fields[currFieldIdx-1])
+					}else{
+						//数组类型
+						a := fieldAddr[len(fieldAddr) - 2].([]interface{})[:preFieldInt]
+						b := fieldAddr[len(fieldAddr) - 2].([]interface{})[preFieldInt+1:]
+						a = append(a,b...)
+						//根据上上个字段，判断上上上个是数组还是map
+						preFieldStr = fields[currFieldIdx-2]
+						if preFieldInt,err = strconv.Atoi(preFieldStr); err != nil {
+							//map类型
+							fieldAddr[len(fieldAddr) - 3].(map[string]interface{})[preFieldStr] = a
 						}else{
-							sonV = sonV.(map[string]interface{})[fieldName]
+							fieldAddr[len(fieldAddr) - 3].([]interface{})[preFieldInt] = a
 						}
+					}
+				} else {
+					//代表是map
+					if _,ok = preFieldValue.(map[string]interface{}); !ok{
+						break
+					}
+					//如果是最后一个key替换
+					if currFieldIdx == lastIdx {
+						preFieldValue.(map[string]interface{})[fieldName] = rewriteVal
+					}else{
+						preFieldValue = preFieldValue.(map[string]interface{})[fieldName]
 					}
 				}
 			}
+			//保存到map中，以做反查
+			fieldAddr = append(fieldAddr, preFieldValue)
 		}
 	}
 
+	newData = data
 	//fmt.Println(newData)
 	return
 }

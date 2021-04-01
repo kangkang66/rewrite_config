@@ -5,30 +5,22 @@
     "daily_max": 50,
     "weight": 10
   },
-  "check_in": {
-    "show": 1,
-    "reward": 100,
-    "daily_max": 1,
-    "weight": 20
-  },
-  "names" : [
-    {
-      "name": "kang"
-    },
-    {
-      "name": "zhangsan"
+  "likes2": {
+    "shuma": {
+      "apple": [
+        [
+          "apple11"
+        ],
+        [
+          "apple12"
+        ]
+      ]
     }
-  ],
-  "likes2": ["apple","banana"],
+  },
   "likes": [
-    [
-      "a","a"
-    ],
     [
       "b","b","bigApple"
     ]
-
-
   ],
   "abtests" : [
     {
@@ -38,7 +30,9 @@
         {
           "ab_val": "1",
           "params": {
-            "likes.1.1.$delete": ""
+            "watch.video.$delete": "",
+            "likes.0.$append": "bbbbb",
+            "likes2.shuma.apple.0.$delete": ""
           }
         }
       ]
@@ -50,7 +44,8 @@
       "version": 120,
       "operator": "=",
       "params":{
-        "watch_video.weight": 120
+        "watch_video.weight": 120,
+        "likes.0":["banana120"]
       }
     }
   ]
