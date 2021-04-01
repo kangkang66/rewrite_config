@@ -32,7 +32,6 @@ func TestRewriteConfigByAbtest(t *testing.T) {
 
 	//用ab对应的参数覆盖原始参数
 	data = RewriteConfigByAbtest(ctx, data, getABValFunc)
-	delete(data,"abtests")
 	fmt.Println(data)
 	return
 }
