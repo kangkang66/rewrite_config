@@ -20,11 +20,12 @@ func rewrite(ctx context.Context, data map[string]interface{}, testParams map[st
 
 		for currFieldIdx,fieldName := range fields {
 			var ok bool
-			//如果是数字，代表是数组的key
-			if idx,err := strconv.Atoi(fieldName);err == nil {
-				if _,ok = preFieldValue.([]interface{});!ok {
-					break
-				}
+			//如果是数字，代表是数组的key，还要判断是否为数组类型，因为有的人会把数字当做对象的key
+			idx,err := strconv.Atoi(fieldName)
+			if err == nil {
+				_,ok = preFieldValue.([]interface{})
+			}
+			if ok {
 				//超出数组长度,后续的字段不会再处理
 				if idx >= len(preFieldValue.([]interface{})) {
 					break
