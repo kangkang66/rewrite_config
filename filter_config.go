@@ -2,10 +2,29 @@ package rewrite_config
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/kangkang66/xcompare"
 )
 
-func RewriteConfigByFilter(ctx context.Context, configData map[string]interface{}, getVersionFunc func(ctx context.Context) (version int64)) (newData map[string]interface{}) {
+type VersionFunc func(ctx context.Context) (version int64)
+
+func RewriteConfigByFilterByte(ctx context.Context, configData []byte, getVersionFunc VersionFunc) (newJsonByte []byte) {
+	newJsonByte = configData
+	cfgData := map[string]interface{}{}
+	err := json.Unmarshal(configData, &cfgData)
+	if err != nil {
+		return
+	}
+	cfgData = RewriteConfigByFilter(ctx, cfgData, getVersionFunc)
+	configData,err = json.Marshal(cfgData)
+	if err != nil {
+		return
+	}
+	newJsonByte = configData
+	return
+}
+
+func RewriteConfigByFilter(ctx context.Context, configData map[string]interface{}, getVersionFunc VersionFunc) (newData map[string]interface{}) {
 	newData = configData
 	//不存在直接返回
 	dataFilters,ok := configData["filters"].([]interface{})

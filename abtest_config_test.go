@@ -9,15 +9,7 @@ import (
 )
 
 func TestRewriteConfigByAbtest(t *testing.T) {
-	content,err := ioutil.ReadFile("config.json")
-	if err != nil {
-		panic(err)
-	}
-	data := map[string]interface{}{}
-	err = json.Unmarshal(content, &data)
-	if err != nil {
-		panic(err)
-	}
+
 
 	//请求的中间件里把ab设置到ctx中
 	abMap := map[string]string{
@@ -30,7 +22,22 @@ func TestRewriteConfigByAbtest(t *testing.T) {
 		return ctx.Value("abtests").(map[string]string)[key]
 	}
 
-	//用ab对应的参数覆盖原始参数
+	//获取配置文件内容直接
+	configContent,err := ioutil.ReadFile("config.json")
+	if err != nil {
+		panic(err)
+	}
+
+	//第一种方法： 直接通过[]byte方法处理配置
+	configContent = RewriteConfigByAbtestByte(ctx, configContent, getABValFunc)
+	fmt.Println(string(configContent))
+
+	//第二种方法： 通过map类型处理配置
+	data := map[string]interface{}{}
+	err = json.Unmarshal(configContent, &data)
+	if err != nil {
+		panic(err)
+	}
 	data = RewriteConfigByAbtest(ctx, data, getABValFunc)
 	fmt.Println(data)
 	return

@@ -4,32 +4,25 @@
 
 # 介绍
 
+当需要做ABtest时，只需要按如下方法修改配置即可
 ```
-当需要做ABtest时，只需要按如下方法修改配置即可：
-
 在正常的配置内容中，增加"abtests"项，如：
 
  {
-      // 原有配置项目（主配置）...
-
+      // 原有配置项目（主配置）
       ...
-
       // 加入ab相关配置
       "abtests":[
           //这里每一项对应一个实验
           {
-       
           "enable": 1 ,   // 可选，是否开启ABtest，默认是1
-
           // 可选，默认值为当前配置项的key。当多个配置要共用一组实验时，可以将此配置设置成同一个值。
-          //  当一个配置中进行多组实验时，每一组对应的cfg_test_tag需要不同 
+          //  当一个配置中进行多组实验时，每一组对应的ab_key需要不同 
           "ab_key": "mytest",
-
           // 各组实验参数，如果某一组实验使用默认的全局配置，可以不对其进行配置
           "tests":[
               {
-                  "ab_key":2,    // 对应在实验配置中的 cfg_test_tag指向的值
-
+                  "ab_val":2,    // 对应在实验配置中的 ab_key指向的值
                   //指定要覆盖主配置的参数，如果命中此组试验，参数会被合并到主配置中
                   "params":{
                       "test1": "value",
@@ -64,7 +57,7 @@
 
 # 使用
 
-> 参考test.go
+## 配置
 
 ```
 {
@@ -108,4 +101,66 @@
     }
   ]
 }
+```
+
+## 方法
+
+- 前期准备数据
+```
+    //请求的中间件里把ab设置到ctx中
+	abMap := map[string]string{
+		"mytest_1":"1",
+	}
+	ctx := context.WithValue(context.Background(), "abtests", abMap)
+
+	//定义一个返回指定ab key的value的函数
+	getABValFunc := func(ctx context.Context, key string) (val string) {
+		return ctx.Value("abtests").(map[string]string)[key]
+	}
+
+	//获取配置文件内容直接
+	configContent,err := ioutil.ReadFile("config.json")
+	if err != nil {
+		panic(err)
+	}
+```
+
+### RewriteConfigByAbtestByte
+处理ab配置，传入的配置数据类型为[]byte
+
+```
+	//直接通过[]byte方法处理配置
+	configContent = RewriteConfigByAbtestByte(ctx, configContent, getABValFunc)
+	fmt.Println(string(configContent))
+```
+
+### RewriteConfigByAbtest
+处理ab配置，传入的配置数据类型为map[string]interface{}
+```
+	data := map[string]interface{}{}
+    err = json.Unmarshal(configContent, &data)
+    if err != nil {
+        panic(err)
+    }
+    data = RewriteConfigByAbtest(ctx, data, getABValFunc)
+    fmt.Println(data)
+```
+
+### RewriteConfigByFilterByte
+处理version配置，传入的配置数据类型为[]byte
+```
+    content = RewriteConfigByFilterByte(context.Background(), content, getVersionFunc)
+	fmt.Println(string(content))
+```
+
+### RewriteConfigByFilter
+处理version配置，传入的配置数据类型为map[string]interface{}
+```
+    data := map[string]interface{}{}
+	err = json.Unmarshal(content, &data)
+	if err != nil {
+		panic(err)
+	}
+	data = RewriteConfigByFilter(context.Background(), data, getVersionFunc)
+	fmt.Println(data)
 ```

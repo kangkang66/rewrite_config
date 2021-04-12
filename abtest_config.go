@@ -2,9 +2,28 @@ package rewrite_config
 
 import (
 	"context"
+	"encoding/json"
 )
 
-func RewriteConfigByAbtest(ctx context.Context, configData map[string]interface{}, getABValueFunc func(ctx context.Context, key string) (val string)) (newData map[string]interface{}) {
+type ABFunc func(ctx context.Context, key string) (val string)
+
+func RewriteConfigByAbtestByte(ctx context.Context, configData []byte, getABValueFunc ABFunc) (newJsonByte []byte) {
+	newJsonByte = configData
+	cfgData := map[string]interface{}{}
+	err := json.Unmarshal(configData, &cfgData)
+	if err != nil {
+		return
+	}
+	cfgData = RewriteConfigByAbtest(ctx, cfgData, getABValueFunc)
+	configData,err = json.Marshal(cfgData)
+	if err != nil {
+		return
+	}
+	newJsonByte = configData
+	return
+}
+
+func RewriteConfigByAbtest(ctx context.Context, configData map[string]interface{}, getABValueFunc ABFunc) (newData map[string]interface{}) {
 	newData = configData
 	//不存在直接返回
 	dataAbtests,ok := configData["abtests"].([]interface{})
