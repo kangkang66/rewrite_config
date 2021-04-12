@@ -54,10 +54,11 @@ func rewrite(ctx context.Context, data map[string]interface{}, testParams map[st
 				} else if fieldName == "$delete" && currFieldIdx == lastIdx && currFieldIdx > 0 {
 					//根据上个字段，判断上上个是数组还是map
 					preFieldStr := fields[currFieldIdx-1]
-					if preFieldInt,err := strconv.Atoi(preFieldStr);err != nil {
-						//map 类型
-						delete(fieldAddr[len(fieldAddr) - 2].(map[string]interface{}), fields[currFieldIdx-1])
-					}else{
+					preFieldInt,err := strconv.Atoi(preFieldStr)
+					if err == nil {
+						_,ok = fieldAddr[len(fieldAddr) - 2].([]interface{})
+					}
+					if ok {
 						//数组类型
 						a := fieldAddr[len(fieldAddr) - 2].([]interface{})[:preFieldInt]
 						b := fieldAddr[len(fieldAddr) - 2].([]interface{})[preFieldInt+1:]
@@ -70,6 +71,9 @@ func rewrite(ctx context.Context, data map[string]interface{}, testParams map[st
 						}else{
 							fieldAddr[len(fieldAddr) - 3].([]interface{})[preFieldInt] = a
 						}
+					}else{
+						//map 类型
+						delete(fieldAddr[len(fieldAddr) - 2].(map[string]interface{}), fields[currFieldIdx-1])
 					}
 				} else {
 					//代表是map

@@ -43,7 +43,8 @@
             "watch_video.$delete": "",
             "likes.0.$append": "bbbbb",
             "likes2.shuma.apple.0.$delete": "",
-            "goods.1.amount": 11
+            "goods.2.amount": 11,
+            "goods.$delete": ""
           }
         }
       ]
