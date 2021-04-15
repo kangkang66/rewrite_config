@@ -1,6 +1,7 @@
 package rewrite_config
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 )
@@ -9,6 +10,11 @@ type ABFunc func(ctx context.Context, key string) (val string)
 
 func RewriteConfigByAbtestByte(ctx context.Context, configData []byte, getABValueFunc ABFunc) (newJsonByte []byte) {
 	newJsonByte = configData
+	//判断是否包含"abtests"，没有直接返回
+	if !bytes.Contains(configData, []byte("abtests")) {
+		return
+	}
+
 	cfgData := map[string]interface{}{}
 	err := json.Unmarshal(configData, &cfgData)
 	if err != nil {
@@ -26,12 +32,11 @@ func RewriteConfigByAbtestByte(ctx context.Context, configData []byte, getABValu
 func RewriteConfigByAbtest(ctx context.Context, configData map[string]interface{}, getABValueFunc ABFunc) (newData map[string]interface{}) {
 	newData = configData
 	//不存在直接返回
-	dataAbtests,ok := configData["abtests"].([]interface{})
+	_,ok := configData["abtests"]
 	if !ok {
 		return
 	}
-
-	for _,abtestVal := range dataAbtests {
+	for _,abtestVal := range configData["abtests"].([]interface{}) {
 		abtest,ok := abtestVal.(map[string]interface{})
 		if !ok {
 			continue
@@ -52,8 +57,11 @@ func RewriteConfigByAbtest(ctx context.Context, configData map[string]interface{
 func getABTestParams(ctx context.Context, abtest map[string]interface{}, getABValueFunc func(ctx context.Context, key string) (val string)) (testParams map[string]interface{}) {
 	//是否启用这个实验
 	enableField,ok := abtest["enable"]
-	if !ok || !enableField.(bool){
-		//默认为false
+	if !ok {
+		return
+	}
+	enable,ok := enableField.(bool)
+	if !ok || !enable {
 		return
 	}
 

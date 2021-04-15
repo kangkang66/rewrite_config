@@ -1,6 +1,7 @@
 package rewrite_config
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"github.com/kangkang66/xcompare"
@@ -10,6 +11,10 @@ type VersionFunc func(ctx context.Context) (version int64)
 
 func RewriteConfigByFilterByte(ctx context.Context, configData []byte, getVersionFunc VersionFunc) (newJsonByte []byte) {
 	newJsonByte = configData
+	//判断是否包含"filters"，没有直接返回
+	if !bytes.Contains(configData, []byte("filters")) {
+		return
+	}
 	cfgData := map[string]interface{}{}
 	err := json.Unmarshal(configData, &cfgData)
 	if err != nil {
@@ -27,12 +32,11 @@ func RewriteConfigByFilterByte(ctx context.Context, configData []byte, getVersio
 func RewriteConfigByFilter(ctx context.Context, configData map[string]interface{}, getVersionFunc VersionFunc) (newData map[string]interface{}) {
 	newData = configData
 	//不存在直接返回
-	dataFilters,ok := configData["filters"].([]interface{})
+	_,ok := configData["filters"]
 	if !ok {
 		return
 	}
-
-	for _,filterVal := range dataFilters {
+	for _,filterVal := range configData["filters"].([]interface{}) {
 		filter,ok := filterVal.(map[string]interface{})
 		if !ok {
 			continue
@@ -50,8 +54,12 @@ func RewriteConfigByFilter(ctx context.Context, configData map[string]interface{
 
 func getFilterParams(ctx context.Context, filter map[string]interface{}, getVersionFunc func(ctx context.Context) (version int64)) (filterParams map[string]interface{})  {
 	enableField,ok := filter["enable"]
-	if !ok || !enableField.(bool){
+	if !ok {
 		//默认为false
+		return
+	}
+	enable,ok := enableField.(bool)
+	if !ok || !enable {
 		return
 	}
 

@@ -34,7 +34,7 @@
   },
   "abtests" : [
     {
-      "enable": true,
+      "enable": false,
       "ab_key": "mytest_1",
       "tests":[
         {
