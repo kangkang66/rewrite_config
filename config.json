@@ -60,5 +60,17 @@
         "likes.0":["banana120"]
       }
     }
+  ],
+  "expands": [
+    {
+      "enable": true,
+      "field": "uid",
+      "operator": "=",
+      "value": "120",
+      "params":{
+        "watch_video.weight": 333,
+        "likes.0":["3333"]
+      }
+    }
   ]
 }
