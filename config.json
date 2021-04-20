@@ -42,6 +42,7 @@
           "params": {
             "watch_video.$delete": "",
             "likes.0.$append": "bbbbb",
+            "likes.1.$replace": "kang",
             "likes2.shuma.apple.0.$delete": "",
             "goods.2.amount": 11,
             "goods.$delete": ""
