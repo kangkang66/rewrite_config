@@ -317,7 +317,7 @@ func Test_5(t *testing.T) {
                 {
                     "ab_val": "1",
                     "params": {
-                        "like.0.$delete":"orange"
+                        "like.0.$delete":""
                     }
                 }
             ]
@@ -376,6 +376,52 @@ func Test_6(t *testing.T) {
 		fmt.Println("Test_6 not pass")
 	}else{
 		fmt.Println("Test_6 pass")
+	}
+}
+
+func Test_7(t *testing.T) {
+	//请求的中间件里把ab设置到ctx中
+	abMap := map[string]string{
+		"mytest_1":"1",
+	}
+	ctx := context.WithValue(context.Background(), "abtests", abMap)
+	//定义一个返回指定ab key的value的函数
+	getABValFunc := func(ctx context.Context, key string) (val string) {
+		return ctx.Value("abtests").(map[string]string)[key]
+	}
+
+	input := `
+{
+	"watch_video": {
+		"show": 1,
+		"reward": 1,
+		"daily_max": 1,
+		"weight": 1
+	},
+	"like":["apple","banana"],
+	"abtests":[
+        {
+            "enable": true,
+            "ab_key": "mytest_1",
+            "tests":[
+                {
+                    "ab_val": "1",
+                    "params": {
+                        "like.1.$insert":["orange"]
+                    }
+                }
+            ]
+        }
+    ]
+}`
+	output := `{"like":["apple","orange","banana"],"watch_video":{"daily_max":1,"reward":1,"show":1,"weight":1}}`
+	testOutput := RewriteConfigByAbtestByte(ctx, []byte(input), getABValFunc)
+	fmt.Println(string(testOutput))
+
+	if string(testOutput) != output {
+		fmt.Println("Test_7 not pass")
+	}else{
+		fmt.Println("Test_7 pass")
 	}
 }
 

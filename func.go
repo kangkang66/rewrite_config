@@ -85,6 +85,28 @@ func rewrite(ctx context.Context, data map[string]interface{}, testParams map[st
 							fieldAddr[len(fieldAddr) - 2].([]interface{})[preFieldInt] = rewriteVal
 						}
 					}
+				}  else if fieldName == "$insert" && currFieldIdx == lastIdx && currFieldIdx > 0 {
+					//数组元素插入
+					//根据上个字段，判断上上个是不是数组
+					preFieldStr := fields[currFieldIdx-1]
+					preFieldInt,err := strconv.Atoi(preFieldStr)
+					if err == nil {
+						arr,ok := fieldAddr[len(fieldAddr) - 2].([]interface{})
+						if ok {
+							insertArr,ok := rewriteVal.([]interface{})
+							if ok {
+								newArr := append(arr[:preFieldInt], append(insertArr, arr[preFieldInt:]...)...)
+								//根据上上个字段，判断上上上个是数组还是map
+								preFieldStr = fields[currFieldIdx-2]
+								if preFieldInt,err = strconv.Atoi(preFieldStr); err != nil {
+									//map类型
+									fieldAddr[len(fieldAddr) - 3].(map[string]interface{})[preFieldStr] = newArr
+								}else{
+									fieldAddr[len(fieldAddr) - 3].([]interface{})[preFieldInt] = newArr
+								}
+							}
+						}
+					}
 				} else {
 					//代表是map
 					if _,ok = preFieldValue.(map[string]interface{}); !ok{
