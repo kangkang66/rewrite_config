@@ -3,7 +3,11 @@
 
 
 # 介绍
-当需要做AB、不同版本不同配置、或者满足某个自定义条件时，配置里的某些内容需要不一样，只需要按如下方法修改配置即可。
+本库用来通过配置来修改json，常用的用处
+1. 一套配置需要按不同的ab实验组有不同的值
+2. 不同的版本用户拉到的配置有不同的值
+3. 不同的用户群体有不同的配置值
+
 
 ## AB的配置规则
 不同的实验组用户看到的配置不一样，例如命中实验组1的用户奖励200，实验组2的用户奖励300。  
@@ -92,9 +96,9 @@
 ```
 
 
-# 使用
+## params配置介绍
 
-## 原始配置
+- 原始配置
 ```
 {
   "watch_video": {
@@ -103,115 +107,127 @@
     "daily_max": 50,
     "weight": 10
   },
-  "likes2": {
-    "shuma": {
-      "apple": [
-        [
-          "apple11"
-        ],
-        [
-          "apple12"
-        ]
-      ]
-    }
-  },
   "likes": [
-    "b","b","bigApple"
-  ],
-  "goods": {
-    "1": {
-      "id": 1,
-      "amount": 1
-    },
-    "2": {
-      "id": 2,
-      "amount": 2
-    }
-  },
-  "abtests" : [
-    {
-      "enable": false,
-      "ab_key": "mytest_1",
-      "tests":[
-        {
-          "ab_val": "1",
-          "params": {
-            //直接完整覆盖
-            "watch": {
-                 "show": 2
-            },
-            //指定字段覆盖
-            "watch_video.show":22,
-            //指定数组元素替换
-            "likes.0": 11,
-            //命令$append，针对数组元素追加
-            "likes.$append": 4,
-            //命令$delete，针对数组元素删除
-            "likes_2.$delete": "",
-            //命令$delete，针对对象元素删除
-            "watch_video_2.award.$delete":""
-          }
-        }
-      ]
-    }
-  ],
-  "filters": [
-    {
-      "enable": true,
-      "version": 120,
-      "operator": "=",
-      "params":{
-        "watch_video.weight": 120,
-        "likes.0":["banana120"]
-      }
-    }
-  ],
-  "expands": [
-    {
-      "enable": true,
-      "field": "uid",
-      "operator": "=",
-      "value": "120",
-      "params":{
-        "watch_video.weight": 333,
-        "likes.0":["3333"]
-      }
-    }
+    "a","b"
   ]
 }
 ```
 
-## params覆盖配置的用法
 
-- 指定对象字段删除
+### 指定对象字段删除
 ```
 "params": {
     "watch_video.show.$delete":""
 }
 ```
+- 输出
+```
+{
+  "watch_video": {
+    "reward": 100,
+    "daily_max": 50,
+    "weight": 10
+  },
+  "likes": [
+    "a","b"
+  ]
+}
+```
 
-- 指定数组元素删除
+### 指定数组元素删除
 ```
 "params": {
     "likes.0.$delete":""
 }
 ```
 
-- 指定对象字段的修改
+- 输出
+```
+{
+  "watch_video": {
+    "show": 1,
+    "reward": 100,
+    "daily_max": 50,
+    "weight": 10
+  },
+  "likes": [
+    "b"
+  ]
+}
+```
+
+### 指定对象字段的修改
 ```
 "params": {
     "watch_video.show":0
 }
 ```
 
-- 指定数组元素的修改
+- 输出
+```
+{
+  "watch_video": {
+    "show": 0,
+    "reward": 100,
+    "daily_max": 50,
+    "weight": 10
+  },
+  "likes": [
+    "a","b"
+  ]
+}
+```
+
+### 指定对象全覆盖
+```
+"params": {
+    "watch_video":{
+      "show": 0,
+      "reward": 0,
+      "daily_max": 0,
+      "weight": 0
+    }
+}
+```
+
+- 输出
+```
+{
+  "watch_video":{
+    "show": 0,
+    "reward": 0,
+    "daily_max": 0,
+    "weight": 0
+  },
+  "likes": [
+    "a","b"
+  ]
+}
+```
+
+### 指定数组元素的修改
 ```
 "params": {
     "likes.0":"bbb"
 }
 ```
 
-- 添加新的对象字段
+- 输出
+```
+{
+  "watch_video": {
+    "show": 1,
+    "reward": 100,
+    "daily_max": 50,
+    "weight": 10
+  },
+  "likes": [
+    "bbb","b"
+  ]
+}
+```
+
+### 添加新的对象字段
 ```
 "params": {
     "play_game":{
@@ -223,45 +239,95 @@
 }
 ```
 
-- 添加新的数组元素
+- 输出
+```
+{
+  "watch_video": {
+    "show": 1,
+    "reward": 100,
+    "daily_max": 50,
+    "weight": 10
+  },
+  "play_game":{
+        "show": 1,
+        "reward": 100,
+        "daily_max": 50,
+        "weight": 10
+  },
+  "likes": [
+    "a","b"
+  ]
+}
+```
+
+### 添加新的数组元素
 ```
 "params": {
     "likes.$append":"yyy"
 }
 ```
 
-- 替换指定下标的数组元素
+- 输出
+```
+{
+  "watch_video": {
+    "show": 1,
+    "reward": 100,
+    "daily_max": 50,
+    "weight": 10
+  },
+  "likes": [
+    "a","b","yyy"
+  ]
+}
+```
+
+### 替换指定下标的数组元素
 ```
 "params": {
     "likes.0.$replace":"yyy"
 }
 ```
 
-- 数组元素，指定位置插入新元素
+- 输出
+```
+{
+  "watch_video": {
+    "show": 1,
+    "reward": 100,
+    "daily_max": 50,
+    "weight": 10
+  },
+  "likes": [
+    "yyy","b"
+  ]
+}
+```
+
+### 数组元素，指定位置插入新元素
 ```
 "params": {
     "likes.1.$insert":["orange"]
 }
 ```
 
-
-## 方法
-
-- 前期准备数据
+- 输出
 ```
-    //请求的中间件里把ab设置到ctx中
-	abMap := map[string]string{
-		"mytest_1":"1",
-	}
-	ctx := context.WithValue(context.Background(), "abtests", abMap)
-
-
-	//获取配置文件内容直接
-	configContent,err := ioutil.ReadFile("config.json")
-	if err != nil {
-		panic(err)
-	}
+{
+  "watch_video": {
+    "show": 1,
+    "reward": 100,
+    "daily_max": 50,
+    "weight": 10
+  },
+  "likes": [
+    "a","orange","b"
+  ]
+}
 ```
+
+
+## 支持的方法
 
 ### RewriteConfigByAbtestByte
 处理ab配置，传入的配置数据类型为[]byte
