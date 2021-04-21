@@ -362,7 +362,7 @@ func Test_6(t *testing.T) {
                 {
                     "ab_val": "1",
                     "params": {
-                        "like.0.$replace":"orange"
+                        "like.0":"orange"
                     }
                 }
             ]

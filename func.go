@@ -75,17 +75,7 @@ func rewrite(ctx context.Context, data map[string]interface{}, testParams map[st
 						//map 类型
 						delete(fieldAddr[len(fieldAddr) - 2].(map[string]interface{}), fields[currFieldIdx-1])
 					}
-				} else if fieldName == "$replace" && currFieldIdx == lastIdx && currFieldIdx > 0 {
-					//根据上个字段，判断上上个是数组还是map
-					preFieldStr := fields[currFieldIdx-1]
-					preFieldInt,err := strconv.Atoi(preFieldStr)
-					if err == nil {
-						_,ok = fieldAddr[len(fieldAddr) - 2].([]interface{})
-						if ok && preFieldInt < len(fieldAddr[len(fieldAddr) - 2].([]interface{})){
-							fieldAddr[len(fieldAddr) - 2].([]interface{})[preFieldInt] = rewriteVal
-						}
-					}
-				}  else if fieldName == "$insert" && currFieldIdx == lastIdx && currFieldIdx > 0 {
+				} else if fieldName == "$insert" && currFieldIdx == lastIdx && currFieldIdx > 0 {
 					//数组元素插入
 					//根据上个字段，判断上上个是不是数组
 					preFieldStr := fields[currFieldIdx-1]

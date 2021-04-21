@@ -285,7 +285,7 @@
 ### 替换指定下标的数组元素
 ```
 "params": {
-    "likes.0.$replace":"yyy"
+    "likes.0":"yyy"
 }
 ```
 
